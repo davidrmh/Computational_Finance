@@ -6,6 +6,7 @@ sig=0.25
 kappa=0.8
 theta=90
 
+parameters<-list()
 parameters[["s0"]]<-s0
 parameters[["delta"]]<-delta
 parameters[["r"]]<-r
