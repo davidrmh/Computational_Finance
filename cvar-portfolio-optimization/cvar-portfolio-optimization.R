@@ -157,6 +157,8 @@ createParticle<-function(numW,maxW=""){
     particle[1:(numW-1)]=runif(numW-1,max=maxW)
     
     #The last weight ensures that they sum to 1
+    #For sake of simplicity and in order to avoid looping infinitely
+    #this is the only weight that might violate maxW constraint
     particle[numW]=1-sum(particle[1:(numW-1)])
     
     #Checks if the particle is in the search space
@@ -167,4 +169,23 @@ createParticle<-function(numW,maxW=""){
   return(particle)
 }
 
-
+##==================================================================================
+## Function for creating the initial population of particles
+##
+## INPUT:
+## numPart: Number of particles in the population
+## numW: Number of weights in each particle
+## maxW: Maximum weight
+##
+## OUTPUT:
+## population: A list of vectors, each one representing a particle
+##==================================================================================
+createPopulation<-function(numPart,numW,maxW=""){
+  population=list()
+  
+  for(i in 1:numPart){
+    population[[i]]=createParticle(numW,maxW)
+  }
+  
+  return(population)
+}
