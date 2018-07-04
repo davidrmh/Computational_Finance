@@ -225,3 +225,31 @@ createVelocities<-function(numVel,numW){
   
   return(velocities)
 }
+
+##==================================================================================
+## Fitness function (average portfolio return + CVAR + CVARLimit)
+##
+## INPUT
+## particle: A particle with the weigths (see createParticle function)
+## returns: A data.frame with the log-returns for each stock series (see calculateReturns function)
+## alpha: CVAR confidence level
+## limit: CVAR limit (we are seeking a CVAR >= limit)
+##
+## OUTPUT
+## fitness: A number representing particle's fitness
+##==================================================================================
+calculateFitness<-function(particle,returns,alpha=0.95,limit=-0.01){
+  
+  #Calculates average portfolio return
+  portRet=portfolioReturns(particle,returns)
+  average=mean(portRet)
+  
+  #Calculates CVAR
+  cvar=calculateCVAR(portRet,alpha)
+  
+  #Calculates fitness
+  fitness=average + cvar + limit
+  
+  return (fitness)
+  
+}
