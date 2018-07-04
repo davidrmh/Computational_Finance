@@ -253,3 +253,47 @@ calculateFitness<-function(particle,returns,alpha=0.95,limit=-0.01){
   return (fitness)
   
 }
+
+##==================================================================================
+## Function for finding the k most close neighbors of a given particle
+## The metric used the is euclidean distance
+##
+## INPUT:
+## particle: Particle of interest
+## population: population of particles
+## k: Number of neighbors
+##
+## OUTPUT:
+## neighbors: A list with the k most close neighbors of particle
+##==================================================================================
+findNeighbors<-function(particle,population,k=4){
+  
+  #Finds the distances
+  distances=c()
+  numParticles=length(population)
+  for(i in 1:numParticles){
+    neighbor=population[[i]]
+    distances=c(distances,sqrt(sum((particle-neighbor)^2)))
+  }
+  
+  #Finds the index or the sorted distances
+  indexOrder=order(distances,decreasing=FALSE)
+  #The first entry in indexOrder is equal to zero
+  #because is the distance of the particle with itself
+  #that is why is removed
+  indexOrder=indexOrder[-1]
+  
+  #Stores the k neighbors
+  neighbors=list()
+  aux=1 #for counting the number of elements added to neighbors
+  for(i in indexOrder){
+    
+    if(aux<=k){
+      neighbors[[aux]]=population[[i]]
+      aux=aux+1
+    }
+  }
+  
+  return (neighbors)
+  
+}
