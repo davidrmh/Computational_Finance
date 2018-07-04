@@ -189,3 +189,19 @@ createPopulation<-function(numPart,numW,maxW=""){
   
   return(population)
 }
+
+##==================================================================================
+## Function for creating a velocity vector
+## INPUT:
+## numW: Integer representing the number of weights
+##
+## OUTPUT:
+## velocity: Vector representing a particle's velocity
+##==================================================================================
+createVelocity<-function(numW){
+  
+  #Standard gaussian distribution
+  velocity=rnorm(numW)
+  
+  return(velocity)
+}
