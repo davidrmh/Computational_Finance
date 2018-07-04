@@ -297,3 +297,125 @@ findNeighbors<-function(particle,population,k=4){
   return (neighbors)
   
 }
+
+##==================================================================================
+## Particle Swarm Optimization
+##
+## INPUT
+## filename: String with the path for the csv file containing the data
+## popSize: population size
+## numGen: number of generations
+## vMax: max value for velocity
+## k: nearest neighbors
+## fi1max: max value for cognition learning rate
+## fi2max: max value for social learning rate
+## wMax: maximum weight for each stock
+## wMin: minimum weight for each stock
+## alpha: CVaR confidence level
+## limit: CVAR limit
+##==================================================================================
+simplePSO<-function(filename,popSize=60,numGen=30,vmax=0.5,k=4,fi1max=2.05,fi2max=2.05,wMax=0.25,wMin=0.01,alpha=0.95,limit=-0.01){
+  
+  #Read the data
+  data=readData(filename)
+  
+  #Calculates returns for each stock series
+  returns=calculateReturns(data)
+  
+  #Gets the number of stocks
+  numStocks=ncol(returns)-1
+  
+  #Initial population and velocities
+  population=createPopulation(popSize,numStocks,wMax)
+  velocities=createVelocities(popSize,numStocks)
+  
+  #Best position of each particle
+  bestPositionPop=population
+  
+  #best particle and best fitness
+  bestParticle=c()
+  bestFitness=-100
+  
+  for(n in 1:numGen){
+    
+    for(i in 1:popSize){
+      
+      #gets a particle from the population
+      particle=population[[i]]
+      bestPositionParticle=bestPositionPop[[i]]
+      bestPositionFitness=calculateFitness(bestPositionParticle,returns,alpha,limit)
+      particleFitness=calculateFitness(particle,returns,alpha,limit)
+      
+      #finds particle's neighbors
+      neighbors=findNeighbors(particle,population,k)
+      
+      neighborsFitness=c()
+      #finds neighbors' fitness
+      for(j in 1:k){
+        neighbor=neighbors[[j]]
+        neighborsFitness=c(neighborsFitness,calculateFitness(neighbor,returns,alpha,limit))
+      }
+      
+      #Finds best neighbor
+      bestNeighbor=neighbors[[which.max(neighborsFitness)[1] ]]
+      
+      #Generates the new velocity
+      currentVelocity=velocities[[i]]
+      fi1=runif(numStocks,max=fi1max)
+      fi2=runif(numStocks,max=fi2max)
+      newVelocity = currentVelocity + fi1*(bestPositionParticle - particle) + fi2*(bestNeighbor - particle)
+      
+      #Adjusts to the max velocity
+      for(j in 1:length(newVelocity)){
+        if(abs(newVelocity[j])>vmax){
+          
+          newVelocity[j]=newVelocity[j]*vmax/abs(newVelocity[j])
+          
+        }
+      }
+      
+      #Creates the new particle
+      newParticle=particle + newVelocity
+      
+      #Ensures that the new particle stays in the search space
+      for(j in 1:length(newParticle)){
+        if(newParticle[j]>wMax){newParticle[j]=wMax}
+        if(newParticle[j]<wMin){newParticle[j]=wMin}
+      }
+      
+      #Calculates the new fitness
+      newFitness=calculateFitness(newParticle,returns,alpha,limit)
+      
+      #Registers the new best position
+      if(newFitness>bestPositionFitness){
+        bestPositionPop[[i]]=newParticle
+        #population[[i]]=newParticle
+        } 
+      
+    } #Next particle
+    
+    #Finds the best particle so far
+    popFitness=c()
+    for(j in 1:popSize){
+      part=bestPositionPop[[j]]
+      popFitness=c(popFitness,calculateFitness(part,returns,alpha,limit))  
+    }
+    
+    indexMax=which.max(popFitness)
+    currBest=popFitness[indexMax]
+    
+    if(currBest>bestFitness){
+      bestFitness=currBest
+      bestParticle=bestPositionPop[[indexMax]]
+    }
+    
+    print(paste("Generation ",n,sep=""),quote = FALSE)
+    print(paste("Best fitness so far = ",round(bestFitness,6),sep=""),quote = FALSE)
+    print(paste("With average return = ",round(mean(portfolioReturns(bestParticle,returns)),6),sep="" ),quote = FALSE)
+    
+  }#Next generation
+  
+  return(bestParticle)
+  
+  
+}
