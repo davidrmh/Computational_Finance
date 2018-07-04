@@ -200,8 +200,28 @@ createPopulation<-function(numPart,numW,maxW=""){
 ##==================================================================================
 createVelocity<-function(numW){
   
-  #Standard gaussian distribution
-  velocity=rnorm(numW)
+  #uniform (-1,1) distribution
+  velocity=runif(numW,min=-1,max=1)
   
   return(velocity)
+}
+
+##==================================================================================
+## Function for creating the initial velocities
+##
+## INPUT
+## numVel: Number of velocities
+## numW: Number of components for each velocity
+##
+## OUTPUT
+## velocities: A list of vectors representing a particle's velocity
+##==================================================================================
+createVelocities<-function(numVel,numW){
+  velocities=list()
+  
+  for(i in 1:numVel){
+    velocities[[i]]=createVelocity(numW)
+  }
+  
+  return(velocities)
 }
